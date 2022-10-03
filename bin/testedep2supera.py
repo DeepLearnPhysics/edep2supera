@@ -19,3 +19,6 @@ for entry in range(ch.GetEntries()):
     if bytes < 1: break
     ev = ch.Event
     proc.ReadEvent(ev)
+
+    if entry > 4:
+        break
