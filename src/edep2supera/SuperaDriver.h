@@ -20,10 +20,10 @@ namespace edep2supera {
 		SuperaDriver() : _segment_size_max(0.03) {}
 
 		supera::EventInput ReadEvent(const TG4Event *ev);
-		void VoxelizeEvent(const TG4Event *ev, supera::EventInput&result ) const;
+		void VoxelizeEvent(const TG4Event *ev, supera::EventInput&result );
 		supera::Particle TG4TrajectoryToParticle(const TG4Trajectory& edepsim_part);
 		supera::ProcessType InferProcessType(const TG4Trajectory& edepsim_part);
-		void ExpandBBox(supera::EventInput& result);
+		//void ExpandBBox(supera::EventInput& result);
 		void Configure(const std::string& name, const std::map<std::string,std::string>& params);
 		void Configure(const supera::PSet &cfg);
 		//void BBox_bounds(const TG4HitSegment &deposition, supera::ParticleInput &PI);
