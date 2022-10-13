@@ -95,9 +95,12 @@ namespace edep2supera {
 	}
 
 	void SuperaDriver::VoxelizeEvent(const TG4Event *ev, 
-		supera::EventInput &result) const
+		supera::EventInput &result)
 	{
 		LOG.DEBUG() << "starting voxelization"<< "\n";
+
+		supera::Point3D botleft = supera::Point3D(std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+		supera::Point3D topright = supera::Point3D(-std::numeric_limits<double>::max(), -std::numeric_limits<double>::max(), -std::numeric_limits<double>::max());
 
 		for (auto const &det : ev->SegmentDetectors)
 		{
@@ -111,6 +114,26 @@ namespace edep2supera {
 
 			for (auto const &hit : det.second)
 			{
+
+				if (hit.GetEnergyDeposit() > 0)
+				{
+					//   std::cout << p.trackid << " " << p.energy_deposit << " adding first " << p.first_step.pos.x << " " << p.first_step.pos.y << " " << p.first_step.pos.z << std::endl;
+					//   std::cout << p.trackid << " " << p.energy_deposit << " adding last " << p.last_step.pos.x << " " << p.last_step.pos.y << " " << p.last_step.pos.z << std::endl;
+					const double epsilon = 1.e-3;
+					botleft.x = std::min(hit.GetStart().X() / 10. - epsilon, botleft.x);
+					botleft.y = std::min(hit.GetStart().Y() / 10. - epsilon, botleft.y);
+					botleft.z = std::min(hit.GetStart().Z() / 10. - epsilon, botleft.z);
+					botleft.x = std::min(hit.GetStop().X() / 10. - epsilon, botleft.x);
+					botleft.y = std::min(hit.GetStop().Y() / 10. - epsilon, botleft.y);
+					botleft.z = std::min(hit.GetStop().Z() / 10. - epsilon, botleft.z);
+
+					topright.x = std::max(hit.GetStart().X() / 10. + epsilon, topright.x);
+					topright.y = std::max(hit.GetStart().Y() / 10. + epsilon, topright.y);
+					topright.z = std::max(hit.GetStart().Z() / 10. + epsilon, topright.z);
+					topright.x = std::max(hit.GetStop().X() / 10. + epsilon, topright.x);
+					topright.y = std::max(hit.GetStop().Y() / 10. + epsilon, topright.y);
+					topright.z = std::max(hit.GetStop().Z() / 10. + epsilon, topright.z);
+				}
 
 				auto track_id = hit.Contrib.front();
 
@@ -149,6 +172,17 @@ namespace edep2supera {
 
 			}
 		}
+		for (auto &part :result)
+		{
+			part.edep_bottom_left.x=botleft.x;
+			part.edep_bottom_left.y=botleft.y;
+			part.edep_bottom_left.z=botleft.z;
+			part.edep_top_right.x=topright.x;
+			part.edep_top_right.y=topright.y;
+			part.edep_top_right.z=topright.z;
+			// std::cout<<"edep bounding box:"<<part.edep_bottom_left.x<<"  "<<part.edep_bottom_left.y<<"  "<<part.edep_bottom_left.z<<"  "<<std::endl;
+		}
+		
 	}
 
 	supera::Particle SuperaDriver::TG4TrajectoryToParticle(const TG4Trajectory& edepsim_part)

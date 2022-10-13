@@ -41,10 +41,10 @@ label_cfg["LogLevel"]="VERBOSE"
 
 
 bbox_cfg = ROOT.std.map("std::string,std::string")()
-bbox_cfg["BBoxSize"]="[]"#"[ 740,  320,  530]"
+bbox_cfg["BBoxSize"]="[ 740,  320,  530]"
 bbox_cfg["VoxelSize"]="[0.4,   0.4,  0.4]"
-bbox_cfg["BBoxBottom"]="[]"#"[-370, -160,  400]"
-
+bbox_cfg["BBoxBottom"]="[-370, -160,  400]"
+#bbox_cfg["BBoxBottom"]="[]"#"[-370, -160,  400]"
 
 
 if len(sys.argv) < 2:
@@ -62,25 +62,29 @@ e2s_driver.ConfigureBBoxAlgorithm("BBoxInteraction", bbox_cfg)
 e2s_driver.ConfigureLabelAlgorithm("LArTPCMLReco3D", label_cfg)
 
 
-ch = TChain('EDepSimEvents')
-print('Adding input:', sys.argv[1])
-ch.AddFile(sys.argv[1])
-print("Chain has", ch.GetEntries(), "entries")
-sys.stdout.flush()
+#ch = TChain('EDepSimEvents')
+#print('Adding input:', sys.argv[1])
+#ch.AddFile(sys.argv[1])
+#print("Chain has", ch.GetEntries(), "entries")
+#sys.stdout.flush()
 
-for entry in range(ch.GetEntries()):
-   
-    print("considering event:", entry)
-    sys.stdout.flush()
-    bytes = ch.GetEntry(entry)
-    if bytes < 1: break
-    ev = ch.Event
-    EventInput=e2s_driver.ReadEvent(ev)
-    e2s_driver.GenerateImageMeta(EventInput)
-    print("meta created")
-    e2s_driver.VoxelizeEvent(ev, e2s_driver.Meta(), EventInput)
-    print("voxelized")
-    e2s_driver.GenerateLabel(EventInput)
+detect = ROOT.TFile.Open(sys.argv[1], "READ") 
+events = detect.Get("EDepSimEvents")
+
+for entry in events:
+
+   #print 
+   #print("considering event:", entry)
+   #sys.stdout.flush()
+   #bytes = ch.GetEntry(entry)
+   #if bytes < 1: break
+   ev = entry.Event
+   EventInput=e2s_driver.ReadEvent(ev)
+   e2s_driver.GenerateImageMeta(EventInput)
+   # print("meta created")
+   # e2s_driver.VoxelizeEvent(ev, e2s_driver.Meta(), EventInput)
+   #print("voxelized")
+   e2s_driver.GenerateLabel(EventInput)
 
 
 
