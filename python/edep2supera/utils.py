@@ -107,41 +107,6 @@ def larcv_particle(p):
     
     return larp
 
-def larcv_neutrino(n):
-    
-    larn = larcv.Neutrino()
-    US2NS = 1.e3
-        
-    larn.id                 (larcv.InstanceID_t(n.id)) 
-    larn.interaction_id     (larcv.InstanceID_t(n.interaction_id))
-    larn.nu_track_id        (supera.CUInt_t(n.nu_track_id))
-    larn.lepton_track_id    (supera.CUInt_t(n.lepton_track_id))
-    larn.current_type        (n.current_type)
-    larn.interaction_mode    (n.interaction_mode)
-    larn.interaction_type    (n.interaction_type)
-    larn.target              (n.target)   
-    larn.nucleon             (n.nucleon)
-    larn.quark               (n.quark)
-    larn.hadronic_invariant_mass(n.hadronic_invariant_mass)
-    larn.bjorken_x              (n.bjorken_x)
-    larn.inelasticity           (n.inelasticity)
-    larn.momentum_transfer      (n.momentum_transfer)
-    larn.momentum_transfer_mag  (n.momentum_transfer_mag)
-    larn.energy_transfer        (n.energy_transfer)
-    larn.theta               (n.theta)
-    larn.pdg_code            (int(n.pdg_code))
-    larn.lepton_pdg_code     (int(n.lepton_pdg_code))
-    larn.momentum            (n.px, n.py, n.pz)
-    larn.lepton_p            (n.lepton_p)
-    larn.position            (n.vtx.pos.x, n.vtx.pos.y, n.vtx.pos.z, n.vtx.time * US2NS)
-    larn.distance_travel     (n.dist_travel)
-    larn.energy_init         (n.energy_init)
-    larn.energy_deposit      (n.energy_deposit)
-    larn.creation_process    (n.creation_process)
-    larn.num_voxels          (int(n.num_voxels))
-   
-    return larn
-
 def run_supera(out_file='larcv.root',
     in_files=[],
     config_key='',
