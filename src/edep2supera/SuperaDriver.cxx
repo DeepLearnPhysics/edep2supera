@@ -77,7 +77,9 @@ namespace edep2supera {
 		{
 			supera::ParticleInput part_input;
 
+			part_input.id      = result.size();
 			part_input.valid   = true;
+
 			part_input.part    = this->TG4TrajectoryToParticle(traj);
 			part_input.part.id = result.size();
 			//part_input.part.type = this->InferProcessType(traj,part_input.part);
@@ -100,15 +102,45 @@ namespace edep2supera {
 			auto& part = result[i].part;
 			auto const& traj = ev->Trajectories[i];
 
-			if(part.parent_trackid < _trackid2idx.size()) {
-				auto const& parent_index = _trackid2idx[part.parent_trackid];
-				if(parent_index != supera::kINVALID_INDEX)
-					part.parent_pdg = result[parent_index].part.pdg;
+			// Skip primary particles (self-parented)
+			if(part.parent_trackid == part.trackid) {
+				part.parent_pdg = part.pdg;
+				result[i].parent_id = i;
+				this->SetProcessType(traj,part);
+				continue;
 			}
+
+			// Validate parent exists in the mapping
+			if(part.parent_trackid >= _trackid2idx.size()) {
+				LOG_FATAL() << "Parent track ID " << part.parent_trackid << " out of bounds for track ID " << part.trackid << "\n";
+				throw supera::meatloaf();
+			}
+
+			auto const& parent_index = _trackid2idx[part.parent_trackid];
+			if(parent_index == supera::kINVALID_INDEX) {
+				LOG_FATAL() << "Parent track ID " << part.parent_trackid << " not found for track ID " << part.trackid << "\n";
+				throw supera::meatloaf();
+			}
+
+			part.parent_pdg = result[parent_index].part.pdg;
+			result[i].parent_id = parent_index;
 			this->SetProcessType(traj,part);
 		}
 
-		VoxelizeEvent(ev,result);
+		// Fill ancestor information - traverse parent chain to find primary particle
+		for (size_t i=0; i<result.size(); ++i) {
+			auto current_idx = i;
+			
+			// Traverse up the parent chain until we reach a primary particle
+			while (result[current_idx].part.trackid != result[current_idx].part.parent_trackid) {
+				current_idx = _trackid2idx[result[current_idx].part.parent_trackid];
+			}
+
+			result[i].ancestor_id = current_idx;
+		}
+
+		// Voxelize the event (fill in the energy deposition information)
+		this->VoxelizeEvent(ev,result);
 
 		return result;
 	}
@@ -151,7 +183,7 @@ namespace edep2supera {
 			LOG_DEBUG() << "Accepting list of active regions from config\n";
 			if (std::find(_allowed_detectors.begin(), _allowed_detectors.end(), det.first) == _allowed_detectors.end())
 			{
-				LOG_INFO() << det.first<< "not in acceptable active regions\n";
+				LOG_WARNING() << det.first << "not in acceptable active regions\n";
 				continue;
 			}
 
@@ -191,7 +223,6 @@ namespace edep2supera {
 					pcloud.reserve(pcloud.size()+edeps.size());
 					for(auto& edep : edeps) pcloud.push_back(edep);
 				}
-
 
 			}
 		}
