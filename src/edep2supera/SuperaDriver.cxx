@@ -6,6 +6,10 @@
 
 namespace edep2supera {
 
+	namespace {
+		constexpr double kNanosecondsPerMicrosecond = 1.e3;
+	}
+
 	void SuperaDriver::Configure(const YAML::Node& cfg)
 	{
 		_allowed_detectors.clear();
@@ -159,12 +163,17 @@ namespace edep2supera {
 		double segment_energy = energy / ((double)(points.size()));
 		double segment_size   = pt_start.distance(pt_end) / ((double)(points.size()));
 		double segment_dedx   = segment_energy / segment_size;
+		double time_start     = start.T() / kNanosecondsPerMicrosecond;
+		double time_end       = end.T() / kNanosecondsPerMicrosecond;
 
 		std::vector<supera::EDep> result(points.size());
 		for(size_t i=0; i<points.size(); ++i) {
+			double fraction = (static_cast<double>(i) + 0.5) /
+			                  static_cast<double>(points.size());
 			result[i].x = points[i].x;
 			result[i].y = points[i].y;
 			result[i].z = points[i].z;
+			result[i].t = time_start + fraction * (time_end - time_start);
 			result[i].e = segment_energy;
 			result[i].dedx = segment_dedx;
 		}
@@ -245,8 +254,10 @@ namespace edep2supera {
 		result.end_px = edepsim_part.Points.back().GetMomentum().X();
 		result.end_py = edepsim_part.Points.back().GetMomentum().Y();
 		result.end_pz = edepsim_part.Points.back().GetMomentum().Z();							  
-		result.vtx = supera::Vertex(start.X() / 10., start.Y() / 10., start.Z() / 10., start.T()); ///< (x,y,z,t) of particle's vertex information
-		result.end_pt = supera::Vertex(end.X() / 10., end.Y() / 10., end.Z() / 10., end.T());		///< (x,y,z,t) at which particle disappeared from G4WorldVolume
+		result.vtx = supera::Vertex(start.X() / 10., start.Y() / 10., start.Z() / 10.,
+		                            start.T() / kNanosecondsPerMicrosecond); ///< (x,y,z,t) of particle's vertex information
+		result.end_pt = supera::Vertex(end.X() / 10., end.Y() / 10., end.Z() / 10.,
+		                               end.T() / kNanosecondsPerMicrosecond); ///< (x,y,z,t) at which particle disappeared from G4WorldVolume
 		//result.process = edepsim_part.Points[0].GetProcess(); 										///< string identifier of the particle's creation process from Geant4
 		result.energy_init = edepsim_part.GetInitialMomentum().E();										///< initial energy of the particle
 		if (edepsim_part.GetParentId() < -1) {
