@@ -8,7 +8,7 @@ with io.open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="edep2supera",
-    version="2.0.2",
+    version="2.0.3",
     cmake_source_dir='src/',
     include_package_data=True,
     cmake_args=[
