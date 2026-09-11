@@ -6,6 +6,7 @@ from ROOT import supera, TChain
 supera.EDep
 import numpy as np
 from larcv import larcv
+from edep2supera.neutrino import neutrinos_from_event
 
 def dict2map(target):
     result = ROOT.std.map("std::string,std::string")()
@@ -107,6 +108,33 @@ def larcv_particle(p):
     
     return larp
 
+def larcv_neutrino(n):
+    result = larcv.Neutrino()
+    result.id(larcv.InstanceID_t(n.index))
+    result.interaction_id(larcv.InstanceID_t(n.interaction_id))
+    result.current_type(n.current_type)
+    result.interaction_mode(n.interaction_mode)
+    result.interaction_type(n.interaction_type)
+    result.target(n.target)
+    result.nucleon(n.nucleon)
+    result.hadronic_invariant_mass(n.hadronic_invariant_mass)
+    result.bjorken_x(n.bjorken_x)
+    result.inelasticity(n.inelasticity)
+    result.momentum_transfer(n.momentum_transfer)
+    result.momentum_transfer_mag(n.momentum_transfer_mag)
+    result.energy_transfer(n.energy_transfer)
+    result.theta(n.theta)
+    result.pdg_code(n.pdg_code)
+    result.lepton_pdg_code(n.lepton_pdg_code)
+    result.momentum(*n.momentum)
+    result.lepton_p(n.lepton_p)
+    result.position(*n.position)
+    result.energy_init(n.energy_init)
+    result.creation_process(n.reaction)
+    if n.lepton_track_id >= 0:
+        result.lepton_track_id(n.lepton_track_id)
+    return result
+
 def run_supera(out_file='larcv.root',
     in_files=[],
     config_key='',
@@ -181,6 +209,10 @@ def run_supera(out_file='larcv.root',
                 continue
             larp = larcv_particle(p)
             particle.append(larp)
+
+        interaction = writer.get_data("neutrino", "mc_truth")
+        for neutrino in neutrinos_from_event(reader.Event):
+            interaction.append(larcv_neutrino(neutrino))
 
         writer.set_id(reader.Event.RunId,0,reader.Event.EventId)
         writer.save_entry()
