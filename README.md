@@ -43,6 +43,12 @@ at the top-level directory.
 
 ## Status
 
+For RooTracker-backed EDepSim input, the converter also extracts the incoming
+neutrino, target, reaction mode, outgoing lepton, and derived lepton kinematics
+from each `TG4PrimaryVertex`. These are written as the LArCV
+`neutrino_mc_truth` product. A generator must preserve an `initial-state`
+informational vertex in EDepSim for this product to be populated.
+
 Milestones
 
 - [x] Fill Supera datatypes from EDepSim datatypes (i.e. TG4Event attributes)
