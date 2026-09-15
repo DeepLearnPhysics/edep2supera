@@ -60,7 +60,7 @@ def test_extracts_genie_neutrino_and_derived_kinematics():
 
     assert len(result) == 1
     truth = result[0]
-    assert truth.interaction_id == 7
+    assert truth.interaction_id == 0
     assert truth.position == (1.0, 2.0, 3.0, 40.0)
     assert truth.pdg_code == 14
     assert truth.target == 1000180400
@@ -120,9 +120,32 @@ def test_converts_neutrino_truth_to_larcv():
         utils.larcv_neutrino(truth)
 
     assert output.values["id"] == 0
-    assert output.values["interaction_id"] == 3
+    assert output.values["interaction_id"] == 0
     assert output.values["current_type"] == 1
     assert output.values["interaction_mode"] == 4
     assert output.values["pdg_code"] == -14
     assert output.values["lepton_pdg_code"] == -14
     assert output.values["position"] == (0.0, 0.0, 0.0, 1.0)
+
+
+def test_interaction_ids_are_event_local_and_ordered():
+    def vertex(source_id, pdg=14):
+        incoming = particle(pdg, (0.0, 0.0, 1000.0, 1000.0))
+        initial = SimpleNamespace(
+            GeneratorName="initial-state", Particles=[incoming]
+        )
+        return SimpleNamespace(
+            Informational=[initial],
+            Particles=[],
+            Reaction="nu:14;tgt:1000180400;proc:Weak[NC],QES;",
+            InteractionNumber=source_id,
+            Position=FourVector(0.0, 0.0, 0.0, 0.0),
+        )
+
+    first_event = neutrinos_from_event(
+        SimpleNamespace(Primaries=[vertex(17), vertex(103)])
+    )
+    second_event = neutrinos_from_event(SimpleNamespace(Primaries=[vertex(104)]))
+
+    assert [truth.interaction_id for truth in first_event] == [0, 1]
+    assert [truth.interaction_id for truth in second_event] == [0]

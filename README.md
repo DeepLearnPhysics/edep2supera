@@ -48,6 +48,8 @@ neutrino, target, reaction mode, outgoing lepton, and derived lepton kinematics
 from each `TG4PrimaryVertex`. These are written as the LArCV
 `neutrino_mc_truth` product. A generator must preserve an `initial-state`
 informational vertex in EDepSim for this product to be populated.
+Neutrino interaction IDs use the same zero-based, event-local ordering as the
+Supera particle labels so downstream readers can associate the two products.
 
 Milestones
 

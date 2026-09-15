@@ -179,9 +179,12 @@ def neutrinos_from_event(event):
         px, py, pz, energy = _components(_particle_momentum(neutrino))
         truth = NeutrinoTruth(
             index=len(result),
-            interaction_id=int(
-                _get(vertex, "GetInteractionNumber", "InteractionNumber")
-            ),
+            # Supera rewrites particle interaction IDs to a zero-based,
+            # event-local ordering. Use the same convention here so downstream
+            # readers can associate this neutrino with its particle group. The
+            # EDepSim interaction number is a source-file-global identifier and
+            # therefore cannot be used as this join key.
+            interaction_id=len(result),
             # EDepSim persists positions in mm; LArCV uses cm. Both use ns here.
             position=(
                 float(position.X()) / 10.0,
