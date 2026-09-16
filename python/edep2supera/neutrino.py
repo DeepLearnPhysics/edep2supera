@@ -90,14 +90,16 @@ def _parse_reaction(reaction):
         except (TypeError, ValueError):
             return -1
 
+    generator_process = integer("generator_process")
     return {
         "target": integer("tgt"),
         "nucleon": integer("N"),
         "current_type": current_type,
         "interaction_mode": mode,
-        # This is the best interaction code present in an EDepSim reaction
-        # string. It matches flow2supera's fallback when no separate code exists.
-        "interaction_type": mode,
+        # Alternative-generator adapters preserve their native process ID in
+        # the reaction string. Fall back to the normalized mode for legacy
+        # and GENIE inputs which do not provide a separate process code.
+        "interaction_type": generator_process if generator_process >= 0 else mode,
     }
 
 

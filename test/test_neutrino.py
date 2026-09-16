@@ -100,6 +100,27 @@ def test_tolerates_non_genie_reaction_metadata():
     assert truth.interaction_mode == -1
 
 
+def test_preserves_generator_process_separately_from_normalized_mode():
+    incoming = particle(14, (0.0, 0.0, 2000.0, 2000.0))
+    initial = SimpleNamespace(GeneratorName="initial-state", Particles=[incoming])
+    vertex = SimpleNamespace(
+        Informational=[initial],
+        Particles=[],
+        Reaction=(
+            "nu:14;tgt:1000180400;N:2112;proc:Weak[CC],RES;"
+            "generator_process:402;"
+        ),
+        InteractionNumber=1,
+        Position=FourVector(0.0, 0.0, 0.0, 0.0),
+    )
+
+    truth = neutrinos_from_event(SimpleNamespace(Primaries=[vertex]))[0]
+
+    assert truth.current_type == 0
+    assert truth.interaction_mode == 4
+    assert truth.interaction_type == 402
+
+
 def test_converts_neutrino_truth_to_larcv():
     incoming = particle(-14, (0.0, 0.0, 500.0, 500.0))
     outgoing = particle(-14, (0.0, 100.0, 400.0, 420.0), track_id=2)
